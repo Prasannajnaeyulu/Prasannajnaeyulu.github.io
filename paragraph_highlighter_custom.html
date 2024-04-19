@@ -137,7 +137,7 @@ function clearHighlights(start, end) {
 
 async function generateQuestions() {
     const paragraph = document.getElementById("paragraph").innerText;
-    const data = callOpenAI(inputText)
+    const data = callOpenAI(`generate questions on this paragraph ${paragraph}`)
     const questions = data.choices.map(choice => choice.text.trim());
     displayQuestions(questions);
 }
