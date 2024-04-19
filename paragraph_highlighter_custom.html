@@ -87,7 +87,7 @@
             }
         });
         const data = await response.json();
-        document.getElementById("paragraph").innerText = data.choices[0].text;
+        document.getElementById("paragraph").innerText = data;
     } catch (error) {
         console.error('Error calling OpenAI API:', error);
         alert('Error calling OpenAI API');
