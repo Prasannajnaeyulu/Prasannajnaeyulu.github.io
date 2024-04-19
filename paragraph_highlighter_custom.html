@@ -129,7 +129,7 @@
   async function callOpenAI(inputText, questions){
       let apiUrl = `https://iek0dn9h5b.execute-api.us-east-1.amazonaws.com/dev/completions?inputText=${inputText}`;
       if(questions){
-        apiUrl = `${apiUrl}?questions="${questions}"`
+        apiUrl = `${apiUrl}&questions="${questions}"`
       }
 
     try {
