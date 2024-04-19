@@ -8,10 +8,36 @@
   .highlight {
     background-color: yellow;
   }
+  /* Spinner animation */
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .spinner-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .spinner {
+      border: 16px solid #f3f3f3; /* Light grey */
+      border-top: 16px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      animation: spin 2s linear infinite;
+    }
+
+    /* Centered text */
+    .loading-text {
+      text-align: center;
+      font-size: 24px;
+    }
 </style>
 </head>
 <body>
-
 <label id="question_label">Describe what type of passage you want</label><br>
 <textarea id="input-text" rows="4" cols="50"></textarea><br>
 <button onclick="generateResponse()">Generate Response</button><br>
@@ -36,7 +62,7 @@
 </select>
 <button onclick="highlightWords()">Start</button>
 
-<div id="questionsdiv" hidden="true">
+<div id="questionsdiv">
   <h1>Question and Answer</h1><br>
   <button onclick="generateQuestions()">Generate Questions</button><br>
   <div id="questions"></div>
@@ -45,10 +71,18 @@
   <button onclick="generateResult()">Generate Result</button><br>
   <div id="result"></div>
 </div>
+<div id="spinner"ß>
+  <div class="spinner-container">
+    <div class="spinner"></div>
+  </div>
+  <div class="loading-text">Loading...</div>
+</div>
 
 <script>
   const questionsdiv = document.getElementById("questionsdiv");
   questionsdiv.style.display = 'none';
+  const spinner = document.getElementById("spinner");
+  spinner.style.display = 'none';
 
   /*async function generateResponse() {
     const inputText = document.getElementById("input-text").value;
@@ -75,6 +109,23 @@
     }
   }*/
 
+  function showLoadingSpinner() {
+    const spinnerFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏', '🕴️'];
+    let frameIndex = 0;
+
+    const intervalId = setInterval(() => {
+      process.stdout.write(`\r${spinnerFrames[frameIndex]} Loading...`);
+      frameIndex = (frameIndex + 1) % spinnerFrames.length;
+    }, 100);
+
+    return intervalId;
+  }
+
+  function hideLoadingSpinner(intervalId) {
+    clearInterval(intervalId);
+    process.stdout.write('\rDone!        \n');
+  }
+
   async function callOpenAI(inputText){
       const apiUrl = `https://iek0dn9h5b.execute-api.us-east-1.amazonaws.com/dev/completions?inputText=${inputText}`;
 
@@ -94,8 +145,12 @@
       
 
   async function generateResponse() {
+    //const intervalId = showLoadingSpinner();
+    spinner.style.display = 'block';
     const inputText = document.getElementById("input-text").value;
     const data = await callOpenAI(inputText)
+    //hideLoadingSpinner(intervalId);
+    spinner.style.display = 'none';
     document.getElementById("paragraph").innerText = data.choices[0].text;
   }
 
@@ -136,8 +191,12 @@ function clearHighlights(start, end) {
 }
 
 async function generateQuestions() {
+    //const intervalId = showLoadingSpinner();
+    spinner.style.display = 'block';
     const paragraph = document.getElementById("paragraph").innerText;
     const data = await callOpenAI(`generate questions on this paragraph ${paragraph}`)
+    //hideLoadingSpinner(intervalId);
+    spinner.style.display = 'none';
     const questions = data.choices.map(choice => choice.text.trim());
     displayQuestions(questions);
 }
