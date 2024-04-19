@@ -85,8 +85,7 @@
                 'Content-Type': 'application/json'
             }
         });
-        const data = await response.json();
-        return data;
+        return await response.json();
     } catch (error) {
         console.error('Error calling OpenAI API:', error);
         alert('Error calling OpenAI API');
@@ -96,7 +95,7 @@
 
   async function generateResponse() {
     const inputText = document.getElementById("input-text").value;
-    const data = callOpenAI(inputText)
+    const data = await callOpenAI(inputText)
     document.getElementById("paragraph").innerText = data.choices[0].text;
   }
 
