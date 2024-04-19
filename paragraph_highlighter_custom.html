@@ -12,9 +12,11 @@
 </head>
 <body>
 
-<label for="userParagraph">Enter your paragraph:</label><br>
-<textarea id="userParagraph" rows="4" cols="50"></textarea><br>
-
+<label id="question_label">Describe what type of passage you want</label><br>
+<textarea id="input-text" rows="4" cols="50"></textarea><br>
+<button onclick="generateResponse()">Generate Response</button><br>
+<!-- <div id="userParagraph"></div><br> -->
+<p id="paragraph"></p><br>
 <label for="wordCount">Number of Words:</label>
 <select id="wordCount">
   <option value="1">1</option>
@@ -34,55 +36,168 @@
 </select>
 <button onclick="highlightWords()">Start</button>
 
-<p id="paragraph"></p>
+<div id="questions" hidden="true">
+  <h1>Question and Answer</h1><br>
+  <button onclick="generateQuestions()">Generate Questions</button><br>
+  <div id="questions"></div>
+  <button onclick="submitAnswers()">Submit Answers</button><br>
+  <div id="answers"></div>
+  <button onclick="generateResult()">Generate Result</button><br>
+  <div id="result"></div>
+</div>
 
 <script>
-function highlightWords() {
-  var userParagraph = document.getElementById("userParagraph").value.trim();
-  var wordCount = parseInt(document.getElementById("wordCount").value);
-  var speed = parseInt(document.getElementById("speed").value) * 1000; // Convert to milliseconds
+  const questions = document.getElementById("questions");
+  questions.style.display = 'none';
 
-  if (!userParagraph) {
-    alert("Please enter a paragraph.");
-    return;
-  }
+  /*async function generateResponse() {
+    const inputText = document.getElementById("input-text").value;
+    const apiUrl = 'https://api.openai.com/v1/completions';
 
-  var paragraph = document.getElementById("paragraph");
-  paragraph.innerText = userParagraph;
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo-instruct',
+                prompt: inputText,
+                max_tokens: 50
+            })
+        });
+        const data = await response.json();
+        document.getElementById("paragraph").innerText = data.choices[0].text;
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        alert('Error calling OpenAI API');
+    }
+  }*/
 
-  var words = userParagraph.split(" ");
-  var index = 0;
+  async function generateResponse() {
+    const inputText = document.getElementById("input-text").value;
+    const apiUrl = `https://iek0dn9h5b.execute-api.us-east-1.amazonaws.com/dev/completions?inputText=${inputText}`;
 
-  function highlightNext() {
-    if (index < words.length - (wordCount - 1)) {
-      var start = index;
-      var end = Math.min(index + wordCount, words.length);
-      for (var i = start; i < end; i++) {
-        words[i] = '<span class="highlight">' + words[i] + '</span>';
-      }
-      paragraph.innerHTML = words.join(" ");
-      index = end;
-      setTimeout(function() {
-        clearHighlights(start, end);
-        highlightNext();
-      }, speed);
-    } else {
-      alert("End of paragraph reached!");
-      // Reset index for re-highlighting if needed
-      index = 0;
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+        document.getElementById("paragraph").innerText = data.choices[0].text;
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        alert('Error calling OpenAI API');
     }
   }
 
-  highlightNext();
+  function highlightWords() {
+        var paragraph = document.getElementById("paragraph");
+        var wordCount = parseInt(document.getElementById("wordCount").value);
+        var speed = parseInt(document.getElementById("speed").value) * 1000; // Convert to milliseconds
+        var words = paragraph.innerText.split(" ");
+        var index = highlightWords.index || 0;
+
+        if (index < words.length - (wordCount - 1)) {
+          var start = index;
+          var end = Math.min(index + wordCount, words.length);
+          for (var i = start; i < end; i++) {
+            words[i] = '<span class="highlight">' + words[i] + '</span>';
+          }
+          paragraph.innerHTML = words.join(" ");
+          highlightWords.index = end;
+          setTimeout(function() {
+            clearHighlights(start, end);
+            highlightWords();
+          }, speed);
+        } else {
+          alert("End of paragraph reached!");
+          // Reset index for re-highlighting if needed
+          highlightWords.index = 0;
+          questions.style.display = 'block';
+        }
 }
 
 function clearHighlights(start, end) {
-  var paragraph = document.getElementById("paragraph");
-  var words = paragraph.innerHTML.split(" ");
-  for (var i = start; i < end; i++) {
-    words[i] = words[i].replace('<span class="highlight">', '').replace('</span>', '');
-  }
-  paragraph.innerHTML = words.join(" ");
+      var paragraph = document.getElementById("paragraph");
+      var words = paragraph.innerText.split(" ");
+      for (var i = start; i < end; i++) {
+        words[i] = words[i].replace('<span class="highlight">', '').replace('</span>', '');
+      }
+      paragraph.innerHTML = words.join(" ");
+}
+
+async function generateQuestions() {
+    const paragraph = document.getElementById("paragraph").innerText;
+    const apiUrl = 'https://api.openai.com/v1/completions';
+    
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo-instruct',
+                prompt: paragraph,
+                max_tokens: 100,
+                n: 5, // Generate 5 questions
+                stop: ['\n']
+            })
+        });
+        const data = await response.json();
+        const questions = data.choices.map(choice => choice.text.trim());
+        displayQuestions(questions);
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        alert('Error calling OpenAI API');
+    }
+}
+
+function displayQuestions(questions) {
+    const questionsDiv = document.getElementById("questions");
+    questionsDiv.innerHTML = "<h3>Generated Questions</h3>";
+    questions.forEach((question, index) => {
+        questionsDiv.innerHTML += `<input type="checkbox" id="question${index}" name="question" value="${question}">`;
+        questionsDiv.innerHTML += `<label for="question${index}">${question}</label><br>`;
+    });
+}
+
+function submitAnswers() {
+    const selectedAnswers = [];
+    const questions = document.querySelectorAll('input[name="question"]');
+    questions.forEach(question => {
+        if (question.checked) {
+            selectedAnswers.push(question.value);
+        }
+    });
+    displayAnswers(selectedAnswers);
+}
+
+function displayAnswers(answers) {
+    const answersDiv = document.getElementById("answers");
+    answersDiv.innerHTML = "<h3>Selected Answers</h3>";
+    answers.forEach((answer, index) => {
+        answersDiv.innerHTML += `<p>${index + 1}. ${answer}</p>`;
+    });
+}
+
+function generateResult() {
+    const resultDiv = document.getElementById("result");
+    const selectedAnswers = document.getElementById("answers").querySelectorAll("p");
+    if (selectedAnswers.length === 0) {
+        resultDiv.innerHTML = "<p>Please select answers first.</p>";
+        return;
+    }
+    let result = "<h3>Result</h3>";
+    selectedAnswers.forEach((answer, index) => {
+        result += `<p>${index + 1}. ${answer.textContent}</p>`;
+    });
+    resultDiv.innerHTML = result;
 }
 </script>
 
