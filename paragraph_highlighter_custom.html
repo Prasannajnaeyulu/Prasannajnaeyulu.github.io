@@ -36,7 +36,7 @@
 </select>
 <button onclick="highlightWords()">Start</button>
 
-<div id="questions" hidden="true">
+<div id="questionsdiv" hidden="true">
   <h1>Question and Answer</h1><br>
   <button onclick="generateQuestions()">Generate Questions</button><br>
   <div id="questions"></div>
@@ -47,8 +47,8 @@
 </div>
 
 <script>
-  const questions = document.getElementById("questions");
-  questions.style.display = 'none';
+  const questionsdiv = document.getElementById("questionsdiv");
+  questionsdiv.style.display = 'none';
 
   /*async function generateResponse() {
     const inputText = document.getElementById("input-text").value;
@@ -122,7 +122,7 @@
           alert("End of paragraph reached!");
           // Reset index for re-highlighting if needed
           highlightWords.index = 0;
-          questions.style.display = 'block';
+          questionsdiv.style.display = 'block';
         }
 }
 
