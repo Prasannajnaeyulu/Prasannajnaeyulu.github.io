@@ -201,7 +201,8 @@ async function generateQuestions() {
     //hideLoadingSpinner(intervalId);
     spinner.style.display = 'none';
     //\n\n1. What was happening in the early morning light?\n2. How did the birds contribute to the scene?\n3. What was the dew doing on the grass?\n4. What could you smell in the air?\n5. What emotion did the
-    const paragraphsString = data.choices.map(choice => choice.text.trim());
+    //const paragraphsString = data.choices.map(choice => choice.text.trim());
+    const paragraphsString = data.choices[0].text;
     const paragraphs = paragraphsString.split("\n").filter(question => question.trim() !== "");
 
     const questions = paragraphs.reduce((acc, paragraph) => {
