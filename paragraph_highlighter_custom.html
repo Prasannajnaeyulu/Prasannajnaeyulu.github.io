@@ -129,7 +129,7 @@
   async function callOpenAI(inputText, questions){
       let apiUrl = `https://iek0dn9h5b.execute-api.us-east-1.amazonaws.com/dev/completions?inputText=${inputText}`;
       if(questions){
-        apiUrl = `${apiUrl}&questions="${questions}"`
+        apiUrl = `${apiUrl}&questions=${questions}`
       }
 
     try {
@@ -197,10 +197,18 @@ async function generateQuestions() {
     //const intervalId = showLoadingSpinner();
     spinner.style.display = 'block';
     const paragraph = document.getElementById("paragraph").innerText;
-    const data = await callOpenAI(`generate questions on this passage "${paragraph}"`, "true")
+    const data = await callOpenAI(`generate questions on this passage "${paragraph}"`)
     //hideLoadingSpinner(intervalId);
     spinner.style.display = 'none';
-    const questions = data.choices.map(choice => choice.text.trim());
+    //\n\n1. What was happening in the early morning light?\n2. How did the birds contribute to the scene?\n3. What was the dew doing on the grass?\n4. What could you smell in the air?\n5. What emotion did the
+    const paragraphsString = data.choices.map(choice => choice.text.trim());
+    const paragraphs = paragraphsString.split("\n").filter(question => question.trim() !== "");
+
+    const questions = paragraphs.reduce((acc, paragraph) => {
+      const paragraphQuestions = paragraph.split("\n");
+      if(paragraphQuestions)
+      return acc.concat(paragraphQuestions);
+    }, []);
     displayQuestions(questions);
 }
 
